@@ -1,23 +1,33 @@
 { config, pkgs, ... }:
-
+let
+  unstableTarball = fetchTarball
+      https://github.com/NixOS/nixpkgs-channels/archive/nixos-unstable.tar.gz;
+in
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./modules
     ];
-  
+    nixpkgs.config = {
+    packageOverrides = pkgs: {
+      unstable = import unstableTarball { # now you can use unstable packages :D
+        config = config.nixpkgs.config;
+      };
+    };
+  };
+
   # Welcome to the NETWORLD :D or hell >:D
   networking = {
     hostName = "ash-notebook"; # Define your hostname.
     wireless = {
       enable = true; # Enables wireless support via wpa_supplicant.
       networks = {
-        TCH-1694467 = { 
-          psk = "24RVqCd8NqnhEMJ66W";
+        TCH-1694467 = { # My router SSID
+          psk = "24RVqCd8NqnhEMJ66W"; # The password :flushed:
         };
-        vaio = {
-          psk = "24RVqCd8NqnhEMJ66W";
+        vaio = { # Other SSID
+          psk = "24RVqCd8NqnhEMJ66W"; # The password
         };
       };
     };
@@ -35,16 +45,12 @@
   };
 
   # Set your time zone.
-  time.timeZone = "America/Argentina";
+  time.timeZone = "America/Argentina/Buenos_Aires";
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   programs = {
     mtr.enable = true;
-    fish = {
-      enable = true;
-    };
-    vim.defaultEditor = true;
     gnupg.agent = {
       enable = true;
       enableSSHSupport = true;
@@ -65,7 +71,6 @@
       # xkbOptions = "eurosign:e;"
       libinput.enable = true;
       windowManager.awesome.enable = true;
-      displayManager.lightdm.background = "`/share/artwork/gnome/nix-wallpaper-nineish.png";
     };
   };
   
@@ -73,8 +78,10 @@
     users.me = {
       isNormalUser = true;
       extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+      description = "Best user";
+      shell = pkgs.zsh;
+      useDefaultShell = true;
     };
-    defaultUserShell = pkgs.fish;
   };
     system.stateVersion = "20.03"; # Did you change my username?
 }
